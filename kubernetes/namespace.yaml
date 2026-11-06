@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: shikybox
+  labels:
+    app.kubernetes.io/name: shikybox
+    app.kubernetes.io/part-of: shikybox-platform
