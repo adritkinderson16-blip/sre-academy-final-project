@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ShikyBox | Pet Happiness Delivered</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="{{ url_for('storefront') }}">🐾 ShikyBox</a>
+    <nav>
+      <a href="{{ url_for('storefront') }}">Boxes</a>
+      <a href="{{ url_for('about') }}">About</a>
+      <a href="{{ url_for('health') }}">Health</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div>
+        <span class="eyebrow">PET HAPPINESS, DELIVERED</span>
+        <h1>A surprise box made for every kind of companion.</h1>
+        <p>
+          ShikyBox delivers toys, treats, enrichment, and care essentials
+          selected for dogs, cats, and small pets.
+        </p>
+        <a class="button primary" href="#boxes">Explore the boxes</a>
+      </div>
+      <div class="hero-pets" aria-label="Dog, cat, and rabbit">🐶 🐱 🐰</div>
+    </section>
+
+    <section id="boxes" class="catalog-section">
+      <div class="section-heading">
+        <span class="eyebrow">MONTHLY SUBSCRIPTIONS</span>
+        <h2>Choose a ShikyBox</h2>
+        <p>Each box includes curated products and a monthly pet-care guide.</p>
+      </div>
+
+      <div class="product-grid">
+        {% for product in products %}
+        <article class="product-card">
+          <div class="product-icon">{{ product.icon }}</div>
+          <p class="pet-type">{{ product.pet_type | replace("-", " ") }}</p>
+          <h3>{{ product.name }}</h3>
+          <p>{{ product.description }}</p>
+          <div class="product-footer">
+            <strong>${{ "%.2f" | format(product.price) }}</strong>
+            <span>/ month</span>
+          </div>
+          <a class="button secondary"
+             href="{{ url_for('product_details', product_id=product.id) }}">
+            View box
+          </a>
+        </article>
+        {% endfor %}
+      </div>
+    </section>
+
+    <section class="operations">
+      <span class="eyebrow light">THE SHIKYBOX PROMISE</span>
+      <h2>Thoughtful surprises for happy companions</h2>
+      <p>
+        Every ShikyBox is assembled around play, enrichment, comfort,
+        and care. We select useful products that help make each month
+        more interesting for pets and easier for the people who love them.
+      </p>
+
+      <div class="promise-grid">
+        <div>
+          <strong>Pet-focused selections</strong>
+          <span>Boxes designed for different pets and personalities.</span>
+        </div>
+
+        <div>
+          <strong>A new surprise every month</strong>
+          <span>Fresh toys, treats, accessories, and care ideas.</span>
+        </div>
+
+        <div>
+          <strong>Simple monthly delivery</strong>
+          <span>Choose a box and let ShikyBox prepare the fun.</span>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <span>ShikyBox {{ version }}</span>
+    <span>Environment: {{ environment }}</span>
+  </footer>
+</body>
+</html>

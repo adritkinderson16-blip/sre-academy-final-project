@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Our Story | ShikyBox</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="{{ url_for('storefront') }}">🐾 ShikyBox</a>
+    <nav>
+      <a href="{{ url_for('storefront') }}">Boxes</a>
+      <a href="{{ url_for('about') }}">Our Story</a>
+    </nav>
+  </header>
+
+  <main class="about-page">
+    <section class="about-hero">
+      <span class="eyebrow">OUR STORY</span>
+      <h1>Small surprises. Big tail wags.</h1>
+      <p>
+        ShikyBox was created around a simple idea: every pet deserves
+        something special to look forward to. Our monthly boxes bring
+        together playful, comforting, and enriching products selected
+        for dogs, cats, and small companions.
+      </p>
+    </section>
+
+    <section class="about-grid">
+      <article>
+        <h2>Made for their personality</h2>
+        <p>
+          Adventurous dogs, curious cats, and clever small pets all enjoy
+          different things. Each ShikyBox is designed around the needs and
+          natural behaviors of a particular kind of companion.
+        </p>
+      </article>
+
+      <article>
+        <h2>More than treats</h2>
+        <p>
+          Every monthly box combines toys, enrichment activities, useful
+          accessories, tasty rewards, and simple care ideas for everyday
+          life with a pet.
+        </p>
+      </article>
+
+      <article>
+        <h2>A happier month together</h2>
+        <p>
+          ShikyBox makes it easy to introduce new ways to play, learn,
+          relax, and spend quality time together, one surprise at a time.
+        </p>
+      </article>
+    </section>
+
+    <section class="operations">
+      <span class="eyebrow light">WHAT GUIDES US</span>
+      <h2>Joy, enrichment, comfort, and care</h2>
+      <ul class="capability-list">
+        <li>Thoughtful products for different kinds of pets</li>
+        <li>New enrichment and play experiences every month</li>
+        <li>Practical accessories for everyday pet care</li>
+        <li>Simple subscription boxes with a little surprise inside</li>
+      </ul>
+    </section>
+  </main>
+
+  <footer>
+    <span>ShikyBox</span>
+    <span>Pet happiness, delivered monthly.</span>
+  </footer>
+</body>
+</html>

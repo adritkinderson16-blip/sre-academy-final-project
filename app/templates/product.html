@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ product.name }} | ShikyBox</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="{{ url_for('storefront') }}">🐾 ShikyBox</a>
+    <nav>
+      <a href="{{ url_for('storefront') }}">Boxes</a>
+      <a href="{{ url_for('about') }}">About</a>
+      <a href="{{ url_for('health') }}">Health</a>
+    </nav>
+  </header>
+
+  <main class="product-page">
+    <a class="back-link" href="{{ url_for('storefront') }}">
+      ← Back to all boxes
+    </a>
+
+    <section class="product-detail">
+      <div class="product-detail-icon">{{ product.icon }}</div>
+
+      <div class="product-detail-content">
+        <span class="eyebrow">
+          {{ product.pet_type | replace("-", " ") }} subscription
+        </span>
+
+        <h1>{{ product.name }}</h1>
+        <p class="product-description">{{ product.description }}</p>
+
+        <h2>Inside this month’s box</h2>
+        <ul class="item-list">
+          {% for item in product["items"] %}
+          <li>✓ {{ item }}</li>
+          {% endfor %}
+        </ul>
+
+        <div class="price">
+          <strong>${{ "%.2f" | format(product.price) }}</strong>
+          <span>per month</span>
+        </div>
+
+        <div class="order-actions">
+          <button
+            class="button primary"
+            type="button"
+            onclick="placeOrder(false)">
+            Order this ShikyBox
+          </button>
+
+          <button
+            class="button danger"
+            type="button"
+            onclick="placeOrder(true)">
+            Simulate failed checkout
+          </button>
+        </div>
+
+        <div
+          id="order-result"
+          class="order-result"
+          role="status"
+          aria-live="polite">
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    async function placeOrder(shouldFail) {
+      const result = document.getElementById("order-result");
+      const suffix = shouldFail ? "?fail=true" : "";
+
+      result.className = "order-result pending";
+      result.textContent = "Processing your ShikyBox order...";
+
+      try {
+        const response = await fetch(
+          "{{ url_for('place_order', product_id=product.id) }}" + suffix,
+          { method: "POST" }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          result.className = "order-result error";
+          result.textContent = data.message;
+          return;
+        }
+
+        result.className = "order-result success";
+        result.textContent =
+          data.message + " Total: $" + data.price.toFixed(2);
+      } catch (error) {
+        result.className = "order-result error";
+        result.textContent =
+          "The order service is currently unavailable.";
+      }
+    }
+  </script>
+</body>
+</html>
