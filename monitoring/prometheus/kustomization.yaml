@@ -5,6 +5,7 @@ resources:
   - namespace.yaml
   - rbac.yaml
   - configmap.yaml
+  - alert-rules.yaml
   - pvc.yaml
   - deployment.yaml
   - service.yaml

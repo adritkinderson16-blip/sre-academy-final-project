@@ -8,5 +8,5 @@ An instrumented Python application deployed on Kubernetes and monitored with Pro
 - [x] 2. Kubernetes deployment
 - [x] 3. Prometheus integration
 - [x] 4. Grafana visualization
-- [ ] 5. Alertmanager deployment
+- [x] 5. Alertmanager deployment
 - [ ] 6. Professional documentation
