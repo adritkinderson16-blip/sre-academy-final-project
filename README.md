@@ -7,6 +7,7 @@ Behind the storefront, ShikyBox demonstrates reliable cloud-native operations th
 ## Table of Contents
 
 - [Project Requirements](#project-requirements)
+- [Bonus Features](#bonus-features)
 - [Project Purpose](#project-purpose)
 - [Architecture](#architecture)
 - [Main Components](#main-components)
@@ -17,6 +18,7 @@ Behind the storefront, ShikyBox demonstrates reliable cloud-native operations th
 - [Prometheus Metrics](#prometheus-metrics)
 - [Prometheus Alert Rules](#prometheus-alert-rules)
 - [Alert Routing](#alert-routing)
+  - [External Email Notifications](#external-email-notifications)
 - [Controlled Alert Testing](#controlled-alert-testing)
   - [Generate Checkout Failures](#generate-checkout-failures)
   - [Generate HTTP Errors](#generate-http-errors)
@@ -32,6 +34,7 @@ Behind the storefront, ShikyBox demonstrates reliable cloud-native operations th
   - [Prometheus Persistent Storage](#prometheus-persistent-storage)
 - [Grafana Deployment](#grafana-deployment)
 - [Alertmanager Deployment](#alertmanager-deployment)
+  - [Configure Gmail Notifications](#configure-gmail-notifications)
 - [Persistent Storage](#persistent-storage)
 - [Implementation Evidence](#implementation-evidence)
   - [Grafana Prometheus Data Source](#grafana-prometheus-data-source)
@@ -39,6 +42,8 @@ Behind the storefront, ShikyBox demonstrates reliable cloud-native operations th
   - [Prometheus ShikyBox Targets](#prometheus-shikybox-targets)
   - [Prometheus Alertmanager Discovery](#prometheus-alertmanager-discovery)
   - [Alertmanager Checkout Alert](#alertmanager-checkout-alert)
+  - [External Email Warning Notification](#external-email-warning-notification)
+  - [External Email Resolved Notification](#external-email-resolved-notification)
 - [License](#license)
 - [Contributing](#contributing)
 
@@ -50,6 +55,12 @@ Behind the storefront, ShikyBox demonstrates reliable cloud-native operations th
 - [x] 4. Grafana visualization
 - [x] 5. Alertmanager deployment
 - [x] 6. Professional documentation
+
+## Bonus Features
+
+- [x] Advanced Alertmanager email notifications through Gmail SMTP
+- [ ] Infrastructure as Code implementation
+- [ ] CI/CD pipeline integration
 
 ## Project Purpose
 
@@ -191,6 +202,33 @@ Alertmanager groups alerts by alert name and severity.
 | `shikybox-critical` | Critical | Routes service-unavailable alerts requiring immediate attention |
 
 Alertmanager also includes an inhibition rule that suppresses related warning alerts when a critical alert for the same condition is active.
+
+### External Email Notifications
+
+Alertmanager sends warning and critical incident notifications through Gmail SMTP.
+
+| Setting | Value |
+|---|---|
+| SMTP server | `smtp.gmail.com:587` |
+| TLS | Required |
+| Warning receiver | `shikybox-operations` |
+| Critical receiver | `shikybox-critical` |
+| Resolved notifications | Enabled |
+| Credential source | Kubernetes Secret mounted as a read-only file |
+
+The Gmail App Password is stored in the `shikybox-email` Kubernetes Secret under the `smtp-password` key.
+
+The Secret was created directly in the Kubernetes cluster and is not stored in this Git repository.
+
+Alert flow:
+
+1. ShikyBox emits application metrics.
+2. Prometheus evaluates the configured alert rules.
+3. Prometheus sends firing alerts to Alertmanager.
+4. Alertmanager groups and routes the alert.
+5. Alertmanager authenticates to Gmail SMTP using the mounted Secret.
+6. Gmail delivers the external warning or critical notification.
+7. Alertmanager sends a resolved notification after the alert condition clears.
 
 ## Controlled Alert Testing
 
@@ -552,6 +590,51 @@ Alertmanager provides alert grouping, routing, inhibition, silencing, and alert-
 - PersistentVolumeClaim with `1Gi`
 - NodePort Service
 
+Deploy Prometheus before completing this section. The Prometheus Kustomize configuration creates the `monitoring` namespace required by the Gmail Secret and Alertmanager resources.
+
+### Configure Gmail Notifications
+
+The Alertmanager Deployment expects a Kubernetes Secret named `shikybox-email`. The Secret is intentionally excluded from Git because it contains the Gmail App Password.
+
+Before deploying Alertmanager:
+
+1. Enable 2-Step Verification on the Gmail sender account.
+2. Create a Google App Password named `ShikyBox Alertmanager`.
+3. Update the sender and recipient addresses in `monitoring/alertmanager/configmap.yaml` when using a different Gmail account.
+4. Create the SMTP password Secret directly in Kubernetes.
+
+Load the 16-character App Password:
+
+    read -s -p "Paste the Gmail App Password: " GMAIL_APP_PASSWORD
+    echo
+
+Remove any spaces shown by Google:
+
+    GMAIL_APP_PASSWORD="${GMAIL_APP_PASSWORD// /}"
+
+Confirm that the value was loaded:
+
+    if [ -n "$GMAIL_APP_PASSWORD" ]; then
+      echo "Gmail App Password loaded, length=${#GMAIL_APP_PASSWORD}"
+    else
+      echo "Gmail App Password is empty"
+    fi
+
+Create the Kubernetes Secret:
+
+    kubectl create secret generic shikybox-email \
+      -n monitoring \
+      --from-literal=smtp-password="$GMAIL_APP_PASSWORD"
+
+The included configuration sends email from and to `adritkinderson16@gmail.com`. To use another Gmail account, update these fields in `monitoring/alertmanager/configmap.yaml`:
+
+- `smtp_from`
+- `smtp_auth_username`
+- `smtp_auth_identity`
+- Each `email_configs.to` value
+
+The App Password must belong to the account configured under `smtp_auth_username`.
+
 Deploy Alertmanager:
 
     kubectl apply -k monitoring/alertmanager
@@ -622,6 +705,22 @@ Prometheus recognizes the internal Alertmanager service as an active alert desti
 Alertmanager receives and groups the `ShikyBoxCheckoutFailures` warning under the `shikybox-operations` receiver.
 
 ![Alertmanager checkout alert](screenshots/alertmanager-checkout-alert.png)
+
+### External Email Warning Notification
+
+Alertmanager successfully sent a firing `ShikyBoxHighErrorRate` warning through Gmail SMTP after controlled HTTP 503 responses raised the application HTTP 5xx ratio above the configured 5 percent threshold.
+
+The notification includes the alert name, service, severity, measured error ratio, summary, and a link back to Alertmanager.
+
+![Alertmanager Gmail warning notification](screenshots/alertmanager-email-high-error-rate.png)
+
+### External Email Resolved Notification
+
+Because `send_resolved: true` is enabled, Alertmanager sent a second email after the HTTP error-rate condition returned below the configured threshold.
+
+This demonstrates the complete incident-notification lifecycle from firing detection through recovery confirmation.
+
+![Alertmanager Gmail resolved notification](screenshots/alertmanager-email-high-error-rate-resolved.png)
 
 ## License
 
