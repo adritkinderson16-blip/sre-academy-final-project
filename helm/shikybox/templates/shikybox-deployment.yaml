@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "shikybox.fullname" . }}
+  namespace: {{ .Values.namespaces.application }}
+  labels:
+    {{- include "shikybox.labels" . | nindent 4 }}
+    app.kubernetes.io/component: storefront
+spec:
+  replicas: {{ .Values.shikybox.replicaCount }}
+  revisionHistoryLimit: 5
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  selector:
+    matchLabels:
+      {{- include "shikybox.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "shikybox.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: storefront
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/metrics"
+        prometheus.io/port: {{ .Values.shikybox.service.port | quote }}
+    spec:
+      containers:
+        - name: shikybox
+          image: "{{ .Values.shikybox.image.repository }}:{{ .Values.shikybox.image.tag }}"
+          imagePullPolicy: {{ .Values.shikybox.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.shikybox.service.port }}
+              protocol: TCP
+          env:
+            - name: ENVIRONMENT
+              value: {{ .Values.shikybox.application.environment | quote }}
+            - name: APP_VERSION
+              value: {{ .Values.shikybox.application.version | quote }}
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: http
+            initialDelaySeconds: {{ .Values.shikybox.probes.readiness.initialDelaySeconds }}
+            periodSeconds: {{ .Values.shikybox.probes.readiness.periodSeconds }}
+            timeoutSeconds: {{ .Values.shikybox.probes.readiness.timeoutSeconds }}
+            failureThreshold: {{ .Values.shikybox.probes.readiness.failureThreshold }}
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: {{ .Values.shikybox.probes.liveness.initialDelaySeconds }}
+            periodSeconds: {{ .Values.shikybox.probes.liveness.periodSeconds }}
+            timeoutSeconds: {{ .Values.shikybox.probes.liveness.timeoutSeconds }}
+            failureThreshold: {{ .Values.shikybox.probes.liveness.failureThreshold }}
+          resources:
+            {{- toYaml .Values.shikybox.resources | nindent 12 }}

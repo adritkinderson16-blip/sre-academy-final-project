@@ -1,0 +1,25 @@
+ShikyBox has been deployed with Helm.
+
+Application namespace:
+  {{ .Values.namespaces.application }}
+
+Monitoring namespace:
+  {{ .Values.namespaces.monitoring }}
+
+Check the application:
+  kubectl get pods -n {{ .Values.namespaces.application }}
+
+Check the monitoring stack:
+  kubectl get pods,pvc -n {{ .Values.namespaces.monitoring }}
+
+Access ShikyBox:
+  minikube service {{ include "shikybox.fullname" . }} -n {{ .Values.namespaces.application }} --url
+
+Access Prometheus:
+  minikube service prometheus -n {{ .Values.namespaces.monitoring }} --url
+
+Access Grafana:
+  minikube service grafana -n {{ .Values.namespaces.monitoring }} --url
+
+Access Alertmanager:
+  minikube service alertmanager -n {{ .Values.namespaces.monitoring }} --url

@@ -1,0 +1,15 @@
+{{- if .Values.prometheus.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-config
+  namespace: {{ .Values.namespaces.monitoring }}
+  labels:
+    app.kubernetes.io/name: prometheus
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/part-of: shikybox-platform
+data:
+  prometheus.yml: |
+{{ .Files.Get "files/prometheus/prometheus.yml" | replace "__SHIKYBOX_NAMESPACE__" .Values.namespaces.application | replace "__MONITORING_NAMESPACE__" .Values.namespaces.monitoring | indent 4 }}
+{{- end }}

@@ -1,0 +1,51 @@
+global:
+  resolve_timeout: 5m
+  smtp_smarthost: smtp.gmail.com:587
+  smtp_from: adritkinderson16@gmail.com
+  smtp_auth_username: adritkinderson16@gmail.com
+  smtp_auth_identity: adritkinderson16@gmail.com
+  smtp_auth_password_file: /etc/alertmanager/secrets/smtp-password
+  smtp_require_tls: true
+
+route:
+  receiver: shikybox-operations
+  group_by:
+    - alertname
+    - severity
+  group_wait: 10s
+  group_interval: 30s
+  repeat_interval: 4h
+
+  routes:
+    - receiver: shikybox-critical
+      matchers:
+        - severity="critical"
+      continue: false
+
+    - receiver: shikybox-operations
+      matchers:
+        - severity="warning"
+      continue: false
+
+receivers:
+  - name: shikybox-operations
+    email_configs:
+      - to: adritkinderson16@gmail.com
+        send_resolved: true
+        headers:
+          subject: '[ShikyBox WARNING] {{ .CommonLabels.alertname }}'
+
+  - name: shikybox-critical
+    email_configs:
+      - to: adritkinderson16@gmail.com
+        send_resolved: true
+        headers:
+          subject: '[ShikyBox CRITICAL] {{ .CommonLabels.alertname }}'
+
+inhibit_rules:
+  - source_matchers:
+      - severity="critical"
+    target_matchers:
+      - severity="warning"
+    equal:
+      - alertname

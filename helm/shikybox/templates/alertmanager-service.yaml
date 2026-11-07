@@ -1,0 +1,22 @@
+{{- if .Values.alertmanager.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: alertmanager
+  namespace: {{ .Values.namespaces.monitoring }}
+  labels:
+    app.kubernetes.io/name: alertmanager
+    app.kubernetes.io/part-of: shikybox-platform
+spec:
+  type: {{ .Values.alertmanager.service.type }}
+  selector:
+    app.kubernetes.io/name: alertmanager
+  ports:
+    - name: web
+      protocol: TCP
+      port: {{ .Values.alertmanager.service.port }}
+      targetPort: web
+  {{- if and (eq .Values.alertmanager.service.type "NodePort") .Values.alertmanager.service.nodePort }}
+      nodePort: {{ .Values.alertmanager.service.nodePort }}
+  {{- end }}
+{{- end }}

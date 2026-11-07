@@ -1,0 +1,15 @@
+{{- if .Values.alertmanager.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: alertmanager-config
+  namespace: {{ .Values.namespaces.monitoring }}
+  labels:
+    app.kubernetes.io/name: alertmanager
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/part-of: shikybox-platform
+data:
+  alertmanager.yml: |
+{{ .Files.Get "files/alertmanager/alertmanager.yml" | indent 4 }}
+{{- end }}

@@ -1,0 +1,63 @@
+groups:
+  - name: shikybox.rules
+    rules:
+      - alert: ShikyBoxUnavailable
+        expr: sum(up{job="shikybox"}) == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: shikybox
+        annotations:
+          summary: "ShikyBox is unavailable"
+          description: "Prometheus cannot reach any ShikyBox application pod."
+
+      - alert: ShikyBoxReplicaDegraded
+        expr: sum(up{job="shikybox"}) < 3
+        for: 1m
+        labels:
+          severity: warning
+          service: shikybox
+        annotations:
+          summary: "ShikyBox has fewer than three available replicas"
+          description: "Only {{ $value }} ShikyBox targets are currently available."
+
+      - alert: ShikyBoxHighErrorRate
+        expr: |
+          sum(rate(shikybox_http_requests_total{status=~"5.."}[2m]))
+          /
+          clamp_min(sum(rate(shikybox_http_requests_total[2m])), 0.001)
+          > 0.05
+        for: 1m
+        labels:
+          severity: warning
+          service: shikybox
+        annotations:
+          summary: "ShikyBox HTTP error rate is above 5 percent"
+          description: "The current HTTP 5xx error ratio is {{ $value | humanizePercentage }}."
+
+      - alert: ShikyBoxHighLatency
+        expr: |
+          histogram_quantile(
+            0.95,
+            sum by (le) (
+              rate(shikybox_request_duration_seconds_bucket[2m])
+            )
+          ) > 1
+        for: 1m
+        labels:
+          severity: warning
+          service: shikybox
+        annotations:
+          summary: "ShikyBox P95 request latency is above one second"
+          description: "The current P95 request latency is {{ $value | humanizeDuration }}."
+
+      - alert: ShikyBoxCheckoutFailures
+        expr: |
+          sum(increase(shikybox_order_failures_total[5m])) >= 3
+        for: 30s
+        labels:
+          severity: warning
+          service: shikybox
+        annotations:
+          summary: "Multiple ShikyBox checkout failures detected"
+          description: "{{ $value }} failed checkouts occurred during the last five minutes."

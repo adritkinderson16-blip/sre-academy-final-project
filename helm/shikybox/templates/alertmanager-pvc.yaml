@@ -1,0 +1,18 @@
+{{- if and .Values.alertmanager.enabled .Values.alertmanager.storage.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: alertmanager-data
+  namespace: {{ .Values.namespaces.monitoring }}
+  labels:
+    app.kubernetes.io/name: alertmanager
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/part-of: shikybox-platform
+spec:
+  accessModes:
+    - {{ .Values.alertmanager.storage.accessMode }}
+  resources:
+    requests:
+      storage: {{ .Values.alertmanager.storage.size }}
+{{- end }}

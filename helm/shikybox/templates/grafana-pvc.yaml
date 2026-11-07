@@ -1,0 +1,18 @@
+{{- if and .Values.grafana.enabled .Values.grafana.storage.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: grafana-data
+  namespace: {{ .Values.namespaces.monitoring }}
+  labels:
+    app.kubernetes.io/name: grafana
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/part-of: shikybox-platform
+spec:
+  accessModes:
+    - {{ .Values.grafana.storage.accessMode }}
+  resources:
+    requests:
+      storage: {{ .Values.grafana.storage.size }}
+{{- end }}

@@ -1,0 +1,9 @@
+{{- if .Values.prometheus.enabled }}
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ .Values.namespaces.monitoring }}
+  labels:
+    app.kubernetes.io/part-of: shikybox-platform
+    app.kubernetes.io/component: monitoring
+{{- end }}
