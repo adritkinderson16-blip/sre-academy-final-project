@@ -83,25 +83,7 @@ The project combines:
 
 ## Architecture
 
-```mermaid
-flowchart LR
-    Customer["Customer Browser"] --> Service["ShikyBox NodePort Service"]
-
-    Service --> Pod1["ShikyBox Pod 1"]
-    Service --> Pod2["ShikyBox Pod 2"]
-    Service --> Pod3["ShikyBox Pod 3"]
-
-    Prometheus["Prometheus"] -->|Scrapes metrics| Pod1
-    Prometheus -->|Scrapes metrics| Pod2
-    Prometheus -->|Scrapes metrics| Pod3
-
-    Grafana["Grafana"] -->|Queries metrics| Prometheus
-    Prometheus -->|Routes firing alerts| Alertmanager["Alertmanager"]
-
-    PrometheusPVC["Prometheus PVC"] --> Prometheus
-    GrafanaPVC["Grafana PVC"] --> Grafana
-    AlertmanagerPVC["Alertmanager PVC"] --> Alertmanager
-```
+![Shikybox Architecture](screenshots/shikybox-architecture.png)
 
 ## Main Components
 
@@ -701,7 +683,7 @@ The chart manages:
 - Alertmanager routing, persistent storage, Deployment, Service, and external Gmail Secret reference
 - Configurable namespaces, images, replicas, NodePorts, storage capacities, probes, and resource limits
 
-The original Kustomize deployment remains available under `kubernetes/` and `monitoring/`. Use either Kustomize or Helm as the deployment method. 
+The original Kustomize deployment remains available under `kubernetes/` and `monitoring/`. Use either Kustomize or Helm as the deployment method.
 
 Validate the chart:
 
